@@ -15,4 +15,25 @@ Adhearsion::Events.draw do
   # end
   #
 
+  after_initialized do |event|
+    logger.info "Application initialized.!!!!!!!!!!!!"
+  end
+
+  ami :name => 'Newchannel' do |event|
+    dirty_chan = event.attributes.fetch('Channel','')
+    if dirty_chan[4..6]  ==  'gsm'
+      logger.info "New GSM channel #{dirty_chan}"
+      ChannelsStatus.first.update("#{dirty_chan[4..8]}" => 'blocked')
+      GsmLine.where(name: dirty_chan[4..8]).first.update(busy: true)
+    end
+  end
+
+  ami :name => 'Hangup' do |event|
+    dirty_chan=event.attributes['Channel']
+    if dirty_chan[4..6]  ==  'gsm'
+      logger.info "Hangup GSM channel #{dirty_chan}"
+      ChannelsStatus.first.update("#{dirty_chan[4..8]}" => 'work')
+      GsmLine.where(name: dirty_chan[4..8]).first.update(busy: false)
+    end
+  end
 end

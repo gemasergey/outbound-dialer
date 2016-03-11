@@ -1,5 +1,10 @@
 # encoding: utf-8
 
+root_path = File.expand_path File.dirname('../')
+
+Dir["#{root_path}/app/classes/*.rb"].each { |class_rb| require class_rb }
+Dir["#{root_path}/app/call_controllers/*.rb"].each { |controller| require controller }
+
 Adhearsion.config do |config|
 
   # Centralized way to specify any Adhearsion platform or plugin configuration
@@ -30,8 +35,19 @@ Adhearsion.config do |config|
   ##
   # Use with Asterisk
   #
-  # config.punchblock.platform = :asterisk # Use Asterisk
-  # config.punchblock.username = "manager" # Your AMI username
-  # config.punchblock.password = "password" # Your AMI password
-  # config.punchblock.host = "asterisk.local-dev.mojolingo.com" # Your AMI host
+   config.punchblock.platform = :asterisk # Use Asterisk
+   config.punchblock.username = "ahn" # Your AMI username
+   config.punchblock.password = "dtxyjcnm" # Your AMI password
+   config.punchblock.host = "127.0.0.1" # Your AMI host
+
+   # Active Record
+  config.adhearsion_activerecord do |ar|
+    ar.username = "root"
+    ar.password = "1221vthrehbq"
+    ar.database = "robo"
+    ar.adapter  = "mysql2" # i.e. mysql, sqlite3
+    ar.host     = "localhost"    # i.e. localhost
+    ar.port     = "3306".to_i # i.e. 3306
+  end
+
 end

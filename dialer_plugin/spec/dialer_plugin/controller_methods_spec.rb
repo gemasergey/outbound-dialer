@@ -1,11 +1,11 @@
 require 'spec_helper'
 
-module Robo
+module DialerPlugin
   describe ControllerMethods do
     describe "mixed in to a CallController" do
 
       class TestController < Adhearsion::CallController
-        include Robo::ControllerMethods
+        include DialerPlugin::ControllerMethods
       end
 
       let(:mock_call) { double 'Call' }

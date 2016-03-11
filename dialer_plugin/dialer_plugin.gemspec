@@ -1,17 +1,17 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require "robo/version"
+require "dialer_plugin/version"
 
 Gem::Specification.new do |s|
-  s.name        = "robo"
-  s.version     = Robo::VERSION
+  s.name        = "dialer_plugin"
+  s.version     = DialerPlugin::VERSION
   s.authors     = ["Plugin Author"]
   s.email       = ["author@plugin.com"]
   s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.summary     = %q{gsm dialer}
+  s.description = %q{gsm dialer}
 
-  s.rubyforge_project = "robo"
+  s.rubyforge_project = "dialer_plugin"
 
   # Use the following if using Git
   # s.files         = `git ls-files`.split("\n")
