@@ -6,12 +6,16 @@ module DialerPlugin
       Thread.new do
         catching_standard_errors do
           dialer = Dialer.new
+          carishere = CarIsHere.new
           loop do
             sleep 10
-            next unless dialer.active_scenario?
-            dialer.find_idle
-            dialer.find_leads
-            dialer.dial_out
+            carishere.copy_orders
+            carishere.dial_out(Order.hot_orders) if Order.ready?
+              # Закрываем отказы
+            Order.ooo {|order| logger.info "Закрываем отказы: #{order.close}"}
+              # Телемаркетинг
+            next unless Scenario.active
+            dialer.dial_out Scenario.active_attempts
           end #loop
         end # catching_standard_errors
       end # Thread

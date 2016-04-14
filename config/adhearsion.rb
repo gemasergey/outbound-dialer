@@ -5,6 +5,8 @@ root_path = File.expand_path File.dirname('../')
 Dir["#{root_path}/app/classes/*.rb"].each { |class_rb| require class_rb }
 Dir["#{root_path}/app/call_controllers/*.rb"].each { |controller| require controller }
 
+require 'socket'
+
 Adhearsion.config do |config|
 
   # Centralized way to specify any Adhearsion platform or plugin configuration
@@ -24,6 +26,10 @@ Adhearsion.config do |config|
 
   config.development do |dev|
     dev.platform.logging.level = :debug
+  end
+
+  config.production do |pro|
+    pro.platform.logging.level = :debug
   end
 
   ##
