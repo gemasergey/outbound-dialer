@@ -5,17 +5,31 @@ module DialerPlugin
       logger.info "Start CALL generator"
       Thread.new do
         catching_standard_errors do
-          dialer = Dialer.new
-          carishere = CarIsHere.new
           loop do
             sleep 10
-            carishere.copy_orders
-            carishere.dial_out(Order.hot_orders) if Order.ready?
-              # Закрываем отказы
-            Order.ooo {|order| logger.info "Закрываем отказы: #{order.close}"}
+
+              # Сообщаем автомобили по выполненным заказам
+            Order.hot_orders do |order|
+              logger.info "Doing dial for order: #{order.order}, callerid: #{order.callerid}"
+              order.dial_out
+            end
+
+              # Закрываем отказанные заказы
+            Order.ooo do |order|
+              logger.info "Закрываем отказы: #{order.close}"
+            end
+
+              # Поздравляем с днем рождения именниников
+            Bday.today do |bday|
+              logger.info "Happy birthday dear #{bday.callerid}"
+              bday.dial_out
+            end
+
               # Телемаркетинг
-            next unless Scenario.active
-            dialer.dial_out Scenario.active_attempts
+            Scenario.active_attempts do |attempt|
+              attempt.dial_out
+            end
+
           end #loop
         end # catching_standard_errors
       end # Thread

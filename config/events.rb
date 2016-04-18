@@ -17,6 +17,10 @@ Adhearsion::Events.draw do
 
   after_initialized do |event|
     logger.info "Application initialized.!!!!!!!!!!!!"
+    Sequel::DATABASES.each do |d|
+      d.sql_log_level = :debug
+      d.loggers << logger
+    end
   end
 
   ami :name => 'Newchannel' do |event|

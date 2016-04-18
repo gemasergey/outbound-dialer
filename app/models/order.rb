@@ -9,18 +9,17 @@ class Order < Sequel::Model
     # Формируем массив id заказов hot_orders для
     # авто сообщения клиентам
   def self.hot_orders
-    hot_orders = Array.new
+    return unless Order.ready?
     GsmGroup.idle_per_group.each do |group, count|
-      orders = Order.select(:id).where(finished: false, inprogress: false, gsm_group_id: group).and("updated_at < ? or attempt = '0'", Time.now - 40).limit(count)
-      next if orders.empty?
-      hot_orders.concat(orders.map(:id))
+      Order.where(finished: false, inprogress: false, gsm_group_id: group).and("updated_at < ? or attempt = '0'", Time.now - 40).limit(count).each do |order|
+        yield order
+      end
     end
-    hot_orders
   end
 
   def self.ready?
-    orders = Order.where(finished: false, inprogress: false)
-    !orders.empty?
+    orders = Order.where(finished: false, inprogress: false).first
+    !orders.nil?
   end
 
   # Закрываем отказы
@@ -32,6 +31,37 @@ class Order < Sequel::Model
     end
   end
 
+    # Формируем звонок по всем id в
+    # hot_orders
+  def dial_out
+    next_try = self.attempt + 1
+    self.set(attempt: next_try, inprogress: true)
+    self.save
+    outcall = Adhearsion::OutboundCall.new
+    outcall.execute_controller_or_router_on_answer CarIsHereController, {order: self}
+
+      # Обрабатываем событие по ответу
+    outcall.on_answer do
+      outcall.tag 'answered'
+      # Запись в БД параметра callsetup
+      update(finished: true)
+      answer
+    end
+
+    # Обрабатываем событие Hangup
+    outcall.on_end do
+      # Все попытки закончились?
+      if attempt == 5
+        update(finished: true)
+        wo_answer
+      end
+      update(inprogress: false)
+    end
+
+    line = GsmGroup[:id => self.gsm_group_id].random_idle_line
+    outcall.dial "SIP/#{line.name}/#{self.callerid}", :from => "0573414405", :timeout => 30
+  end # of dial_out
+
     # Преобразуем цифры номера в слова
     #
   def words
@@ -42,7 +72,7 @@ class Order < Sequel::Model
       # отказ
       # водитель 00
     if driver == '00'
-      return [dir + 'otkaz']
+      return [@dir + 'otkaz']
     end
 
     @words.push(@dir + 'bi_bi')
@@ -63,7 +93,7 @@ class Order < Sequel::Model
     socket.close if socket
     return response.to_s
   rescue Exception => ex
-    return "Error in answer: #{ex.message}"
+    return "Error in Order#answer: #{ex.message}"
   end
 
     # Не удалось дозвониться клиенту
@@ -71,6 +101,8 @@ class Order < Sequel::Model
   def wo_answer
     res = HTTP.get("http://192.168.0.101:8084/callphone/nedozwon.php?ordernum=#{self.order}&phone=#{self.callerid}")
     return res.to_s
+  rescue Exception => ex
+    return "Error in Order#wo_answer: #{ex.message}"
   end
 
     # Заказ отказан, через
@@ -82,6 +114,8 @@ class Order < Sequel::Model
     socket.close if socket
     self.update(driver: '000')
     return response.to_s
+  rescue Exception => ex
+    return "Error in Order#close: #{ex.message}"
   end
 
 
