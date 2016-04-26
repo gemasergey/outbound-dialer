@@ -4,10 +4,9 @@ module DialerPlugin
     run :greet_plugin do
       logger.info "Start CALL generator"
       Thread.new do
-        catching_standard_errors do
-          loop do
-            sleep 10
-
+        loop do
+         sleep 10
+         begin
               # Сообщаем автомобили по выполненным заказам
             Order.hot_orders do |order|
               logger.info "Doing dial for order: #{order.order}, callerid: #{order.callerid}"
@@ -30,8 +29,14 @@ module DialerPlugin
               attempt.dial_out
             end
 
-          end #loop
-        end # catching_standard_errors
+          rescue Exception => ex
+            logger.error "Exception in plugin loop"
+            logger.error ex.message
+            logger.error ex.backtrace
+            sleep 30
+            next
+          end #of begin
+        end #loop
       end # Thread
     end # plugin run
 

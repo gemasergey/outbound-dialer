@@ -2,9 +2,6 @@
 
 root_path = File.expand_path File.dirname('../')
 
-Dir["#{root_path}/app/classes/*.rb"].each { |class_rb| require class_rb }
-Dir["#{root_path}/app/call_controllers/*.rb"].each { |controller| require controller }
-
 require 'socket'
 
 Adhearsion.config do |config|

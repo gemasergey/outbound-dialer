@@ -1,3 +1,5 @@
+#!/usr/local/rvm/wrappers/ruby-2.2.1@gsm/ruby
+# coding: utf-8
 require 'rubygems'
 require 'sequel'
 require 'mysql2'
@@ -25,9 +27,6 @@ begin
   }
   DBT = Sequel.connect(taxi_db_conf)
   DB = Sequel.connect(robo_db_conf)
-
-  puts DBT[:refclients].exclude(birthdate: nil).first
-  puts DB[:orders].first
 
   DBT.fetch("SELECT phone, birthdate FROM refclients WHERE MONTH(birthdate) = MONTH(NOW()) AND DAY(birthdate) = DAY(NOW())").each do |client|
     callerid = client[:phone].gsub(/\D/, '')
