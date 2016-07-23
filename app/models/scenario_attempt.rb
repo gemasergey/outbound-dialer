@@ -14,7 +14,7 @@ class ScenarioAttempt < Sequel::Model
     set(inprogress: true)
     save
 
-    dialer_call = DialerCall.create(scenario_attempt_id: id, callerid: self.lead[:callerid])
+    dialer_call = DialerCall.create(scenario_attempt_id: id, callerid: self.lead[:callerid], scenario_id: scenario_id)
     self.add_dialer_call(dialer_call)
     outcall = Adhearsion::OutboundCall.new
     create_time = Time.now
